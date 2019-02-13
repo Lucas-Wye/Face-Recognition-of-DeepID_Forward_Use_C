@@ -1,6 +1,7 @@
 # usage: python3 compare.py 1.txt 2.txt
 import sys
-from numpy import linalg
+from math import sqrt
+
 threshold = 0.2
 def open_file(file_name):
 	f1 = open(file_name,'r')
@@ -17,9 +18,13 @@ def cal_distance(v1,feature_file):
 	v2 = open_file(feature_file)
 	numerator = 0
 	denominador = 0
+	v1_t = 0
+	v2_t = 0 
 	for i in range(160):
 		numerator += v1[i] * v2[i]
-	denominador = linalg.norm(v1) * linalg.norm(v2)
+		v1_t += v1[i] * v1[i]
+		v2_t += v2[i] * v2[i]
+	denominador = sqrt(v1_t * v2_t)	
 	cos = numerator / denominador
 	return cos
 
