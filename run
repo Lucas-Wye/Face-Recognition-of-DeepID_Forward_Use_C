@@ -1,0 +1,12 @@
+#! /usr/bash
+
+# get pixels
+python3 src/get_image_pixel.py pic_rgb/1.jpg
+python3 src/get_image_pixel.py pic_rgb/2.jpg
+
+# extract feature 
+./cnn.app pic_rgb/1.jpg.bin > pic_rgb/1.jpg.txt
+./cnn.app pic_rgb/2.jpg.bin > pic_rgb/2.jpg.txt
+
+# compare
+python3 src/compare.py pic_rgb/1.jpg.txt pic_rgb/2.jpg.txt
