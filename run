@@ -1,0 +1,41 @@
+#! /bin/bash
+
+if [ $# -ne 2 ];then
+echo "Usage: sh run ../sample_face_detection/pic/1.jpg ../sample_face_detection/pic/2.jpg\n"
+exit;
+fi
+
+# get pixels
+echo "Getting pixels..."
+# python3 src/get_image_pixel.py pic_rgb/1.jpg
+# python3 src/get_image_pixel.py pic_rgb/2.jpg
+echo "./get_pixel $1 $1.bin"
+./get_pixel $1 $1.bin
+echo "./get_pixel $2 $2.bin"
+./get_pixel $2 $2.bin
+
+# change size
+echo "\nChange size..."
+echo "./transform $1.bin $1.bin"
+./transform $1.bin $1.bin
+echo "./transform $2.bin $2.bin"
+./transform $2.bin $2.bin
+
+# extract feature 
+echo "\nExtracting feature..."
+echo "./cnn.app $1.bin $2.bin $1.txt $2.txt"
+./cnn.app $1.bin $1.txt $2.bin $2.txt
+
+# compare
+echo "\nComparing..."
+echo "python3 src/compare.py $1.txt $2.txt\n"
+python3 src/compare.py $1.txt $2.txt
+
+rm -rf $1.bin
+rm -rf $2.bin
+
+rm -rf $1.txt
+rm -rf $2.txt
+
+
+echo "\nDone."
