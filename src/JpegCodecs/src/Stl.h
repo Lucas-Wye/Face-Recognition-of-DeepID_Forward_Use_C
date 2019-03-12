@@ -12,7 +12,7 @@ enum NodeColor
     BLACK = 2
 };
 
-/* map ç»“ç‚¹ */
+/* map ½áµã */
 struct MapNode
 {
     int Key;
@@ -26,7 +26,7 @@ struct MapNode
     }
 };
 
-/* RBTree ç»“ç‚¹ */
+/* RBTree ½áµã */
 struct RBNode
 {
     RBNode() : Parent(NULL), Left(NULL), Right(NULL) {}
@@ -51,13 +51,13 @@ struct RBTree
         if (root == NULL)
         {
             root = new RBNode(*node);
-            root->Color = BLACK;   // æ»¡è¶³æ¡ä»¶ 1
+            root->Color = BLACK;   // Âú×ãÌõ¼þ 1
             root->Parent = NULL;
         }
         /* child or grandchild of root */
         else
         {
-            AddToTree(root, node); // æ’å…¥åˆ°äºŒå‰æ ‘ä¸­
+            AddToTree(root, node); // ²åÈëµ½¶þ²æÊ÷ÖÐ
         }
 
         /* check */
@@ -66,9 +66,9 @@ struct RBTree
 
     void AddToTree(RBNode *root, RBNode *node)
     {
-        if (node->Data.Less(&root->Data)) // æ’å…¥åˆ°ç»“ç‚¹å·¦è¾¹
+        if (node->Data.Less(&root->Data)) // ²åÈëµ½½áµã×ó±ß
         {
-            if (root->Left == NULL) // ç»ˆæ­¢æ¡ä»¶
+            if (root->Left == NULL) // ÖÕÖ¹Ìõ¼þ
             {
                 root->Left = node;
                 node->Parent = root;
@@ -77,9 +77,9 @@ struct RBTree
 
             AddToTree(root->Left, node);
         }
-        else // æ’å…¥åˆ°ç»“ç‚¹å³è¾¹
+        else // ²åÈëµ½½áµãÓÒ±ß
         {
-            if (root->Right == NULL) // ç»ˆæ­¢æ¡ä»¶
+            if (root->Right == NULL) // ÖÕÖ¹Ìõ¼þ
             {
                 root->Right = node;
                 node->Parent = root;
