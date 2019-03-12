@@ -1,25 +1,42 @@
-LIB = -lm
+LIB = -lm -fopenmp
 CC = gcc
 
 SRC = ./src/cnn.c ./src/mat.c 
 OBJ = $(SRC:%.c=%.o)
 
-cnn.app: $(OBJ) ./src/main.o
-	$(CC) -g $(OBJ) ./src/main.o $(LIB) -o $@
+SRC_trans = ./src/transform/transform.c
+OBJ_trans = $(SRC_trans:%.c=%.o)
+
+cnn.app: $(OBJ) ./src/main.o $(OBJ_trans) ./src/JpegCodecs/main.cpp ./src/JpegCodecs/src/JpegDecoder.o
+	$(CC) $(OBJ) ./src/main.o $(LIB) -o $@
+	$(CC) $(OBJ_trans) -o transform
+	g++ -I ./src/JpegCodecs/src/  ./src/JpegCodecs/main.cpp ./src/JpegCodecs/src/JpegDecoder.o -o get_pixel	
+
+./src/JpegCodecs/src/JpegDecoder.o: ./src/JpegCodecs/src/JpegDecoder.cpp
+	g++ -c ./src/JpegCodecs/src/JpegDecoder.cpp -o $@
 
 test:$(OBJ) ./src/test.o
-	$(CC) -g $(OBJ) ./src/test.o $(LIB) -o $@
+	$(CC) $(OBJ) ./src/test.o $(LIB) -o $@
 	
 %.o:%.c
-	$(CC) -g -c $(LIB) $< -o $@
+	$(CC) -c $(LIB) $< -o $@
 
 ./src/main.o: ./src/main.c
-	$(CC) -g -c $(LIB) $< -o $@
+	$(CC) -c $(LIB) $< -o $@
 
 ./src/test.o: ./src/test.c
-	$(CC) -g -c $(LIB) $< -o $@
+	$(CC) -c $(LIB) $< -o $@
 
 clean:
-	rm -f *.app
-	rm -f test
-	rm -f ./src/*.o
+	rm -rf *.app
+	rm -rf test
+	rm -rf ./src/*.o
+
+clean_all:
+	rm -rf *.app
+	rm -rf test
+	rm -rf ./src/*.o
+	rm -rf ./src/transform/*.o
+	rm -rf transform
+	rm -rf get_pixel
+	rm -rf ./src/JpegCodecs/src/*.o
