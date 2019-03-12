@@ -16,14 +16,15 @@ typedef struct convolutional_layer{
 	int inChannels;  
 	int outChannels;
 	int kernel_size;
+	
 	//w is a 4d matrix, inChannels*outChannels*kernel_size*kernel_size	
-	float**** mapData;	  	
+	float**** mapData;
 	//b
-	float* basicData;	
+	float* basicData;
 	// the input of active function
-	float*** v; 
+	float*** v;
 	// the output of active function
-	float*** y; 
+	float*** y;
 }CovLayer;
 
 // pooling layer
@@ -93,7 +94,9 @@ void read_file_fc(char *filename,int a,int b,FcLayer *fc);
 void read_file_conv(char *filename,int a, int b, int c, int d,CovLayer *conv);
 
 float*** read_image_rgb(char *filename);
+void cnnff(CNN* cnn,float*** inputData,char * filename);
+void conv_clear(CovLayer* covL);
+void pool_clear(PoolLayer* pool,int stride);
+void fc_clear(FcLayer* fc);
 
-void cnnff(CNN* cnn,float*** inputData);
 #endif
-

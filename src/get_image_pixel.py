@@ -6,6 +6,7 @@ import struct
 filename = sys.argv[1]
 
 img = Image.open(filename).resize((96,112))
+
 w,h= img.size
 print(w,h)
 # new_pic = Image.new("RGB",(w,h))

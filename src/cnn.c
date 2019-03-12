@@ -20,13 +20,17 @@ CovLayer *initCovLayer(int inputWidth,int inputHeight,int kernel_size,int inChan
 	// initaial W
 	int i,j,c,r;	
 	covL->mapData=(float ****)malloc(outChannels * sizeof(float ***));
-	for(i=0;i<outChannels;i++)
+	
+	// for(i=0;i<outChannels;i++)
+	for(i=(outChannels-1);i!=(-1);i--)
 	{
 		covL->mapData[i]=(float ***)malloc(inChannels * sizeof(float **));
-		for(j=0;j<inChannels;j++)
+		// for(j=0;j<inChannels;j++)
+		for(j=(inChannels-1);j!=(-1);j--)
 		{	
 			covL->mapData[i][j]=(float **)malloc(kernel_size * sizeof(float *));
-			for(r=0;r<kernel_size;r++)
+			// for(r=0;r<kernel_size;r++)
+			for(r=(kernel_size-1);r!=(-1);r--)
 			{
 				covL->mapData[i][j][r]=(float *)malloc(kernel_size * sizeof(float));				
 			}
@@ -41,11 +45,13 @@ CovLayer *initCovLayer(int inputWidth,int inputHeight,int kernel_size,int inChan
 	//v,y
 	covL->v=(float***)malloc(outChannels*sizeof(float**));
 	covL->y=(float***)malloc(outChannels*sizeof(float**));
-	for(j=0;j<outChannels;j++)
+	// for(j=0;j<outChannels;j++)
+	for(j=(outChannels-1);j!=(-1);j--)
 	{		
 		covL->v[j]=(float**)malloc(outH*sizeof(float*));
 		covL->y[j]=(float**)malloc(outH*sizeof(float*));
-		for(r=0;r<outH;r++)
+		// for(r=0;r<outH;r++)
+		for(r=(outH-1);r!=(-1);r--)	
 		{			
 			covL->v[j][r]=(float*)calloc(outW,sizeof(float));
 			covL->y[j][r]=(float*)calloc(outW,sizeof(float));
@@ -86,9 +92,13 @@ PoolLayer *initPoolLayer(int inputWidth,int inputHeight,int kernel_size,
 
 	int j,r;
 	poolL->y = (float***)malloc(outChannels*sizeof(float**));
-	for(j=0;j<outChannels;j++){		
+	// for(j=0;j<outChannels;j++)
+	for(j=(outChannels-1);j!=(-1);j--)	
+	{
 		poolL->y[j] = (float**)malloc(outH*sizeof(float*));
-		for(r=0;r<outH;r++){			
+		// for(r=0;r<outH;r++)
+		for(r=(outH-1);r!=(-1);r--)	
+		{
 			poolL->y[j][r] = (float*)calloc(outW,sizeof(float));
 		}
 	}
@@ -108,7 +118,8 @@ FcLayer *initFcLayer(int inputNum,int outputNum)
 	// initial W
 	FcL->wData = (float**)malloc(outputNum*sizeof(float*)); 
 	int i,j;	
-	for(i=0;i<outputNum;i++)
+	// for(i=0;i<outputNum;i++)
+	for(i=(outputNum-1);i!=(-1);i--)
 	{
 		FcL->wData[i] = (float*)malloc(inputNum*sizeof(float));		
 	}
@@ -171,34 +182,27 @@ void MaxPooling(float** output,nSize outputSize,float** input,nSize inputSize,in
 	}
 }
 
+
+
 void read_file_conv(char *filename,int a, int b, int c, int d,CovLayer *conv)
 {
 //(20,3,4,4)
-	FILE  *fp=fopen(filename,"rb");	
-	float temp;
-	int i,j,m,n;
+	FILE  *fp=fopen(filename,"rb");		
+	int i,j,m;
 	for(i=0;i<a;i++)//20
 	{
 		for(j=0;j<b;j++)//3
 		{
 			for(m=0;m<c;m++)//4
 			{
-				for(n=0;n<d;n++)//4
-				{
-					fread((char*)&temp,sizeof(float),1,fp);					
-					conv->mapData[i][j][m][n] = temp;
-				}
+				fread(conv->mapData[i][j][m],sizeof(float),d,fp);
 			}
 		}
 	}
-	for(i=0;i<a;i++)//20
-	{
-		fread((char*)&temp,sizeof(float),1,fp);				
-		conv->basicData[i] = temp;
-	}
+	fread(conv->basicData,sizeof(float),a,fp);
 	fclose(fp);
-
 }
+
 
 void read_file_fc(char *filename,int a,int b,FcLayer *fc)
 {
@@ -207,35 +211,25 @@ void read_file_fc(char *filename,int a,int b,FcLayer *fc)
 	int i,j;
 	for(i=0;i<a;i++)//160
 	{
-		for(j=0;j<b;j++)//31500
-		{			
-			fread((char*)&temp,sizeof(float),1,fp);			
-			fc->wData[i][j] = temp;
-		}
+		fread(fc->wData[i],sizeof(float),b,fp);		
 	}
-	for(i=0;i<a;i++)
-	{
-
-		fread((char*)&temp,sizeof(float),1,fp);		
-		fc->basicData[i] =temp;		
-	}
+	fread(fc->basicData,sizeof(float),a,fp);
 	fclose(fp);
 }
 
-
 float*** read_image_rgb(char *filename)
 {
-	FILE *file;            
+	FILE *file;
     file = fopen(filename, "rb");
 
     // int **r,**g,**b;
     int w,h;
     fread(&w,sizeof(int),1,file);
     fread(&h,sizeof(int),1,file);
-    // printf("image size w = %d ,image size h =  %d \n",w,h);
+    fprintf(stderr,"image size w = %d, image size h =  %d \n",w,h);
 
     int i,j,k;
-    int temp;
+
     float ***image_data;
     image_data = (float ***)malloc(sizeof(float **) * 3);
     
@@ -248,44 +242,42 @@ float*** read_image_rgb(char *filename)
     mean[1] = 108.306;
     mean[2] = 92.1874;
 
+    int temp[112];
+
     for(k=0;k<3;k++)
     {
     	image_data[k] = (float **)malloc(sizeof(float *) * w);
     	for(i=0;i<w;i++)
     	{
     		image_data[k][i] = (float *)malloc(sizeof(float) * h);
+    		
+    		fread(temp,sizeof(float),h,file);
     		for(j=0;j<h;j++)
-            {
-                fread(&temp,sizeof(float),1,file);                
-                image_data[k][i][j] = temp - mean[k];
+            {                               
+                image_data[k][i][j] = temp[j] - mean[k];
                 // printf("%f ",image_data[k][i][j]);
             }
             // printf("\n");
     	}
     	// printf("\n");
     }
-
     fclose(file);
 
 	float ***input_data = (float***)malloc(sizeof(float**)*3);	
-
 	for(i=2;i>=0;i--)
 	{
-		input_data[2-i] = transpose_matrix(image_data[i],96,112);
-		for(j=0;j<96;j++)
-		{
-			free(image_data[i][j]);
-		}
-		free(image_data[i]);
-	}
-	free(image_data);
+		input_data[2-i] = transpose_matrix(image_data[i],96,112);		
+	}	
 	return input_data;
 }
 
+void cnnff(CNN* cnn,float*** inputData,char * filename)
+{
 
-//forward 
-void cnnff(CNN* cnn,float*** inputData)
-{	
+	clock_t start,end;	
+
+	start = clock();
+
 	// conv1
 	int i,j,r,c;
 	//(4,4)
@@ -295,20 +287,15 @@ void cnnff(CNN* cnn,float*** inputData)
 	//(93,109)
 	nSize outSize = {cnn->pool1->inputWidth,cnn->pool1->inputHeight};
 	
+	float **mapout;
+
 	for(i=0;i<(cnn->conv1->outChannels);i++)//20
 	{
 		for(j=0;j<(cnn->conv1->inChannels);j++)//3
-		{								
-			float **mapout=cov(cnn->conv1->mapData[i][j],
-				kernel_size,inputData[j],inSize,valid);//(96,112)						
+		{
+			mapout=cov(cnn->conv1->mapData[i][j],kernel_size,inputData[j],inSize,valid);//(96,112)
 			//conv result is saved to v
-			addmat(cnn->conv1->v[i],cnn->conv1->v[i],
-				outSize,mapout,outSize);//(93,102)			
-			for(r=0;r<outSize.r;r++)
-			{
-				free(mapout[r]);
-			}
-			free(mapout);
+			addmat(cnn->conv1->v[i],cnn->conv1->v[i],outSize,mapout,outSize);//(93,102)						
 		}
 		for(r=0;r<outSize.r;r++)//109
 		{
@@ -326,8 +313,12 @@ void cnnff(CNN* cnn,float*** inputData)
 	for(i=0;i<(cnn->pool1->outChannels);i++)
 	{		
 		MaxPooling(cnn->pool1->y[i],outSize,cnn->conv1->y[i],inSize,cnn->pool1->kernel_size,2);		
-	}	
+	}
 
+	end = clock();
+	fprintf(stderr,"conv1 and pool1 time = %f seconds\n",(double)(end-start)/CLOCKS_PER_SEC);
+
+	start = clock();
 
 	// conv2	
 	//(3,3)	
@@ -339,22 +330,20 @@ void cnnff(CNN* cnn,float*** inputData)
 	outSize.c = cnn->pool2->inputWidth;
 	outSize.r = cnn->pool2->inputHeight;
 
+
 	for(i=0;i<(cnn->conv2->outChannels);i++)//40
 	{
 		for(j=0;j<(cnn->conv2->inChannels);j++)//20
-		{											
-			float **mapout=cov(cnn->conv2->mapData[i][j],
-				kernel_size,cnn->pool1->y[j],inSize,valid);//(47,55)
+		{														
+			mapout=cov(cnn->conv2->mapData[i][j],kernel_size,cnn->pool1->y[j],inSize,valid);//(47,55)
 			//conv result is saved to v
+			addmat(cnn->conv2->v[i],cnn->conv2->v[i],outSize,mapout,outSize);//(45,53)
 
-			addmat(cnn->conv2->v[i],cnn->conv2->v[i],
-				outSize,mapout,outSize);//(45,53)
-
-			for(r=0;r<outSize.r;r++)
-			{
-				free(mapout[r]);
-			}
-			free(mapout);
+			// for(r=0;r<outSize.r;r++)
+			// {
+			// 	free(mapout[r]);
+			// }
+			// free(mapout);
 		}		
 
 		for(r=0;r<outSize.r;r++)//53
@@ -376,6 +365,11 @@ void cnnff(CNN* cnn,float*** inputData)
 		MaxPooling(cnn->pool2->y[i],outSize,cnn->conv2->y[i],inSize,cnn->pool2->kernel_size,1);
 	}
 
+	end = clock();
+	fprintf(stderr,"conv2 and pool2 time = %f seconds\n",(double)(end-start)/CLOCKS_PER_SEC);	
+
+	start = clock();
+
 	// conv3	
 	//(3,3)	
 	kernel_size.r = kernel_size.c = cnn->conv3->kernel_size;
@@ -385,21 +379,20 @@ void cnnff(CNN* cnn,float*** inputData)
 	//(42,50)
 	outSize.c = cnn->pool3->inputWidth;
 	outSize.r = cnn->pool3->inputHeight;
+	
 	for(i=0;i<(cnn->conv3->outChannels);i++)//60
 	{
 		for(j=0;j<(cnn->conv3->inChannels);j++)//40
-		{											
-			float **mapout=cov(cnn->conv3->mapData[i][j],
-				kernel_size,cnn->pool2->y[j],inSize,valid);//(44,52)
+		{			
+			mapout=cov(cnn->conv3->mapData[i][j],kernel_size,cnn->pool2->y[j],inSize,valid);//(44,52)
 			//conv result is saved to v
-			addmat(cnn->conv3->v[i],cnn->conv3->v[i],
-				outSize,mapout,outSize);//(42,50)
+			addmat(cnn->conv3->v[i],cnn->conv3->v[i],outSize,mapout,outSize);//(42,50)
 
-			for(r=0;r<outSize.r;r++)
-			{
-				free(mapout[r]);
-			}
-			free(mapout);
+			// for(r=0;r<outSize.r;r++)
+			// {
+			// 	free(mapout[r]);
+			// }
+			// free(mapout);
 		}		
 
 		for(r=0;r<outSize.r;r++)//50
@@ -421,20 +414,14 @@ void cnnff(CNN* cnn,float*** inputData)
 	outSize.r = cnn->conv4->inputHeight;//25
 	for(i=0;i<(cnn->pool3->outChannels);i++)
 	{
-		MaxPooling(cnn->pool3->y[i],outSize,cnn->conv3->y[i],inSize,cnn->pool3->kernel_size,2);
-		/*
-		for(r=0;r<25;r++)
-		{
-			for(c=0;c<21;c++)
-			{
-				printf("%f\n",cnn->pool3->y[i][r][c]);
-				// printf("%f ",cnn->pool1->y[i][r][c]);
-			}
-			// printf("\n");
-		}
-		// printf("\n");		
-		*/
+		MaxPooling(cnn->pool3->y[i],outSize,cnn->conv3->y[i],inSize,cnn->pool3->kernel_size,2);		
 	}
+
+	end = clock();
+	fprintf(stderr,"conv3 and pool3 time = %f seconds\n",(double)(end-start)/CLOCKS_PER_SEC);
+	
+
+	start = clock();
 
 	// conv4	
 	//(2,2)	
@@ -445,21 +432,15 @@ void cnnff(CNN* cnn,float*** inputData)
 	//(20,24)
 	outSize.c = 20;
 	outSize.r = 24;
+	
+
 	for(i=0;i<(cnn->conv4->outChannels);i++)//80
 	{
 		for(j=0;j<(cnn->conv4->inChannels);j++)//60
-		{											
-			float **mapout=cov(cnn->conv4->mapData[i][j],
-				kernel_size,cnn->pool3->y[j],inSize,valid);//(44,52)
+		{														
+			mapout=cov(cnn->conv4->mapData[i][j],kernel_size,cnn->pool3->y[j],inSize,valid);//(44,52)			
 			//conv result is saved to v
-			addmat(cnn->conv4->v[i],cnn->conv4->v[i],
-				outSize,mapout,outSize);//(20,24)
-
-			for(r=0;r<outSize.r;r++)
-			{
-				free(mapout[r]);
-			}
-			free(mapout);
+			addmat(cnn->conv4->v[i],cnn->conv4->v[i],outSize,mapout,outSize);//(20,24)
 		}		
 
 		for(r=0;r<outSize.r;r++)//24
@@ -467,13 +448,14 @@ void cnnff(CNN* cnn,float*** inputData)
 			for(c=0;c<outSize.c;c++)//20
 			{
 				cnn->conv4->y[i][r][c]=activation_relu(cnn->conv4->v[i][r][c],cnn->conv4->basicData[i]);
-
-				/*
-				printf("%f\n", cnn->conv4->y[i][r][c]);
-				*/
 			}
 		}
 	}		
+
+	end = clock();	
+	fprintf(stderr,"conv4 time =           %f seconds\n",(double)(end-start)/CLOCKS_PER_SEC);
+	
+	start = clock();
 
 	//fc160_1
 	//(21,25)
@@ -484,7 +466,7 @@ void cnnff(CNN* cnn,float*** inputData)
 	//
 	int out_channel = 160;
 	
-	int k = 0;			
+	int k = 0;
 	for(j=0;j<input_channel;j++)//60
 	{
 		for(r=0;r<inSize.r;r++)	//25
@@ -496,18 +478,21 @@ void cnnff(CNN* cnn,float*** inputData)
 			}
 		}
 	}
-
-	for(i=0;i<out_channel;i++) //160
-	{
-		for(k=0;k<(cnn->fc160_1->inputNum);k++)
+	
+	for(i=(out_channel-1);i!=(-1);i--) //160
+	{			
+		for(k=(cnn->fc160_1->inputNum-1);k!=(-1);k--)
 		{
 			cnn->fc160_1->y[i] += cnn->fc160_1->v[k] * cnn->fc160_1->wData[i][k];
 		}
-		cnn->fc160_1->y[i] += cnn->fc160_1->basicData[i];
-		/*
-		printf("%lf\n", cnn->fc160_1->y[i]);
-		*/
+		cnn->fc160_1->y[i] += cnn->fc160_1->basicData[i];		
 	}
+
+	
+	end = clock();	
+	fprintf(stderr,"fc160_1 time =         %f seconds\n",(double)(end-start)/CLOCKS_PER_SEC);
+	
+	start = clock();
 
 	//fc160_2
 	//(20,24)
@@ -515,10 +500,10 @@ void cnnff(CNN* cnn,float*** inputData)
 	inSize.r = cnn->conv4->inputHeight - cnn->conv4->kernel_size + 1;	
 	//80
 	input_channel = cnn->conv4->outChannels;
-	//
+	//160
 	out_channel = 160;
 	
-	k = 0;			
+	k = 0;
 	for(j=0;j<input_channel;j++)//80
 	{
 		for(r=0;r<inSize.r;r++)	//24
@@ -531,24 +516,101 @@ void cnnff(CNN* cnn,float*** inputData)
 		}
 	}
 
-	for(i=0;i<out_channel;i++) //160
-	{
-		for(k=0;k<(cnn->fc160_2->inputNum);k++)
+	
+	for(i=(out_channel-1);i!=(-1);i--) //160
+	// for(i=0;i<out_channel;i++) //160
+	{		
+		for(k=(cnn->fc160_2->inputNum-1);k!=(-1);k--)
+		// for(k=0;k<(cnn->fc160_1->inputNum);k++)
 		{
 			cnn->fc160_2->y[i] += cnn->fc160_2->v[k] * cnn->fc160_2->wData[i][k];
 		}
-		cnn->fc160_2->y[i] += cnn->fc160_2->basicData[i];
-		/*
-		printf("%lf\n", cnn->fc160_2->y[i]);
-		*/
+		cnn->fc160_2->y[i] += cnn->fc160_2->basicData[i];		
 	}
 
-	// fc160
-	for(i=0;i<160;i++)
+	end = clock();
+	fprintf(stderr,"fc160_2 time =         %f seconds\n",(double)(end-start)/CLOCKS_PER_SEC);
+
+	start = clock();
+
+	FILE *output = fopen(filename,"w");
+
+	// fc160	
+	for(i=(160-1);i!=(-1);i--)
 	{
 		cnn->fc160->outputdata[i] = cnn->fc160_1->y[i] + cnn->fc160_2->y[i];
-		printf("%f\n", cnn->fc160->outputdata[i]);
+		fprintf(output,"%f\n", cnn->fc160->outputdata[i]);
 	}
-	
+	fclose(output);
+
+	end = clock();
+	fprintf(stderr,"fc160 time =           %f seconds\n",(double)(end-start)/CLOCKS_PER_SEC);
+
 }
 
+
+void conv_clear(CovLayer* covL)
+{
+	int j,c,r;
+	int outH,outW;
+//conv
+	outW = covL->inputWidth - covL->kernel_size + 1;
+	outH = covL->inputHeight - covL->kernel_size + 1;
+	for(j=(covL->outChannels-1);j!=(-1);j--)
+	{
+		for(r=(outH-1);r!=(-1);r--)	
+		{			
+			for(c=(outW-1);c!=(-1);c--)
+			{
+				covL->v[j][r][c] = 0;
+				covL->y[j][r][c] = 0;
+			}
+		}
+	}
+}
+
+void pool_clear(PoolLayer* pool,int stride)
+{
+	int j,r,c;
+	int outW,outH;
+
+	if(stride==2)
+	{
+		outW = ((pool->inputWidth%2==0)?0:1) + pool->inputWidth/pool->kernel_size;
+		// printf("outW should be 47/21, here the value is %d\n",outW);
+		outH = ((pool->inputHeight%2==0)?0:1) + pool->inputHeight/pool->kernel_size;
+		// printf("outW should be 55/25, here the value is %d\n",outH);
+	}
+	else
+	{
+		outW = pool->inputWidth - pool->kernel_size + 1;
+		// printf("outW should be 44, here the value is %d\n",outW);
+		outH = pool->inputHeight - pool->kernel_size + 1;
+		// printf("outW should be 52, here the value is %d\n",outH);
+	}
+
+	for(j=(pool->outChannels-1);j!=(-1);j--)	
+	{		
+		for(r=(outH-1);r!=(-1);r--)	
+		{
+			for(c=(outW-1);c!=(-1);c--)
+			{
+				pool->y[j][r][c] = 0;
+			}
+		}
+	}
+}
+
+void fc_clear(FcLayer* fc)
+{
+	int i;
+	for(i=(fc->inputNum-1);i!=(-1);i--)
+	{
+		fc->v[i] = 0;
+	}
+	for(i=(fc->outputNum-1);i!=(-1);i--)
+	{
+		fc->y[i] = 0;
+	}
+
+}
